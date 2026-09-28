@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>School Routines – English Fun!</title>
+<style>
+:root{--bg:#fff7e6;--ink:#2b2d42;--card:#fff;--a:#ff6b6b;--b:#4dabf7;--c:#51cf66;--d:#ffd43b;--e:#9775fa}
+@media(prefers-color-scheme:dark){:root{--bg:#1e2235;--ink:#f4f4f8;--card:#2c3150}}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Trebuchet MS","Comic Sans MS",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:20px;padding-top:env(safe-area-inset-top)}
+header{position:sticky;top:0;z-index:5;background:linear-gradient(90deg,var(--b),var(--e));color:#fff;padding:10px 14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+header h1{margin:0;font-size:1.1em}#hud{font-weight:bold}
+.pb{flex-basis:100%;height:10px;background:#ffffff55;border-radius:9px;overflow:hidden}.pb i{display:block;height:100%;background:var(--d);transition:width .5s}
+main{max-width:900px;margin:0 auto;padding:14px}
+.top{display:flex;align-items:center;gap:10px}.top h2{margin:6px 0;font-size:1.2em}
+.btn{font:inherit;font-weight:bold;min-height:56px;padding:10px 20px;border:0;border-radius:18px;background:var(--b);color:#fff;cursor:pointer;box-shadow:0 4px 0 #0003}
+.btn.sm{min-height:44px;padding:6px 14px}.btn.go{background:var(--c)}.btn.alt{background:var(--d);color:#333;margin-top:10px}.btn:active{transform:translateY(3px)}
+.btn:focus-visible,.opt:focus-visible,.tile:focus-visible,.fc:focus-visible{outline:4px solid #f08c00}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.tile{font:inherit;min-height:120px;border:0;border-radius:22px;color:#fff;font-weight:bold;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:0 5px 0 #0003;transition:transform .2s}
+.tile:hover{transform:scale(1.04)}.tile .em{font-size:2.2em}
+.card{background:var(--card);border-radius:22px;padding:16px;margin:10px 0;box-shadow:0 4px 12px #0002;text-align:center}
+.big{font-size:1.6em;font-weight:bold;margin:8px 0}.em{font-size:2.6em;line-height:1.1}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+.opt,.fc{font:inherit;min-height:90px;background:var(--card);color:var(--ink);border:4px solid var(--b);border-radius:20px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;font-weight:bold}
+.opt.ok,.fc.ok{background:#b2f2bb;border-color:var(--c);color:#123;animation:pop .4s}.opt.no{background:#ffc9c9;border-color:var(--a);opacity:.7}.opt.sel,.fc.sel{border-color:var(--d);background:#fff3bf;color:#333}
+.bar{height:12px;background:#0002;border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:var(--c);transition:width .4s}
+.good{color:#2b8a3e;font-weight:bold;font-size:1.2em}.bad{color:#e03131;font-weight:bold}
+.ln{text-align:left;padding:4px 0}.ln .em{font-size:1.6em}
+.row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.slot{min-width:80px;min-height:80px;border:3px dashed var(--e);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:2.2em;background:var(--card);cursor:pointer}
+.slot.bad{border-color:var(--a);background:#ffc9c9}
+iframe{width:100%;aspect-ratio:16/9;border:0;border-radius:16px;background:#000}
+input{font:inherit;padding:10px;border-radius:12px;border:3px solid var(--b);width:100%;max-width:420px;background:var(--card);color:var(--ink)}
+.star{font-size:2.4em}
+.fx{position:fixed;font-size:2em;pointer-events:none;animation:up 1.2s ease-out forwards;z-index:9}
+@keyframes up{to{transform:translateY(-220px) rotate(200deg);opacity:0}}@keyframes pop{50%{transform:scale(1.12)}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+details{margin-top:16px;font-size:.8em}
+</style>
+</head>
+<body>
+<header><h1>🏫 School Routines</h1><div id="hud" aria-live="polite"></div><div class="pb"><i id="pbi"></i></div></header>
+<main id="app"></main>
+<script>
+const $=s=>document.querySelector(s),app=$('#app');
+const sh=a=>[...a].sort(()=>Math.random()-.5),pick=a=>a[Math.floor(Math.random()*a.length)],cap=s=>s[0].toUpperCase()+s.slice(1);
+let P={};try{P=JSON.parse(localStorage.getItem('sr1')||'{}')}catch(e){}
+P.pts=P.pts||0;P.stars=P.stars||0;P.best=P.best||{};P.yt=P.yt||{};
+const save=()=>{try{localStorage.setItem('sr1',JSON.stringify(P))}catch(e){}};
+const GOOD=['Excellent! 🌟','Great job! 👏','You did it! 🎉','Super! 🚀','Well done! 💪'],TRY=['Try again! 💪','Almost! Try again.','Look and listen again! 👀'];
+/* word, picture, sentence */
+const W=[['wake up','😴','I wake up.'],['go to school','🚌','I go to school.'],['enter the classroom','🚪','I enter the classroom.'],['sit down','🪑','Sit down, please.'],['stand up','🧍','Stand up, please.'],['open your book','📖','Open your book.'],['close your book','📕','Close your book.'],['listen','👂','Listen to the teacher.'],['read','📚','I read a book.'],['write','✏️','I write my name.'],['draw','🎨','I draw a star.'],['color','🖍️','I color the sun.'],['raise your hand','🙋','Raise your hand.'],['ask a question','❓','I ask a question.'],['play','⚽','I play with friends.'],['eat lunch','🍎','I eat lunch.'],['clean up','🧹','Clean up, please.'],['go home','🏠','I go home.']];
+const UNITS=['Unit 1: Morning ☀️','Unit 2: In Class ✏️','Unit 3: Helping & Home 🏠'];
+const F=[['🪑','Sit ___.','down'],['🧍','Stand ___.','up'],['📖','Open your ___.','book'],['🙋','Raise your ___.','hand'],['🏠','Go ___.','home'],['🍎','Eat ___.','lunch'],['🧹','Clean ___.','up'],['🚌','Go to ___.','school'],['❓','Ask a ___.','question'],['😴','Wake ___.','up']];
+const S=[{n:'Sam',l:[['⏰','Sam wakes up.'],['🚌','He goes to school.'],['🪑','He sits down.'],['📖','He reads a book.'],['🏠','He goes home.']],q:[['Where does Sam go?','school',['school','park','shop']],['What does Sam read?','a book',['a book','a ball','a pencil']],['Sam ___ at the end.','goes home',['goes home','plays','draws']]]},
+{n:'Mia',l:[['🚪','Mia enters the classroom.'],['🙋','She raises her hand.'],['❓','She asks a question.'],['🎨','She draws a picture.'],['🍎','She eats lunch.']],q:[['Who enters the classroom?','Mia',['Mia','Sam','Teacher']],['What does Mia raise?','her hand',['her hand','her book','her bag']],['What does Mia draw?','a picture',['a picture','a house','a cat']]]}];
+const T=[{t:'Sit down and stand up',s:'sit down stand up classroom commands ESL kids',b:'🪑 What is this action?',o:['sit down','stand up','listen'],c:0,w:['sit down','stand up','clap your hands','open your book']},
+{t:'Morning routine',s:'daily routine wake up go to school kids song',b:'😴 What is this action?',o:['go home','wake up','play'],c:1,w:['wake up','go to school','eat','go home']},
+{t:'Classroom actions',s:'classroom actions listen read write draw kids',b:'✏️ What is this action?',o:['read','draw','write'],c:2,w:['listen','read','write','draw']}];
+/* audio: real recordings from ./audio/<word>.mp3 first; device voice only as backup */
+function speak(t){let d=0;const f=()=>{if(!d){d=1;tts(t)}};const a=new Audio('audio/'+t.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'.mp3');a.onerror=f;a.play().catch(f)}
+function tts(t){if(!window.speechSynthesis)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-US';u.rate=.8;u.pitch=1.1;speechSynthesis.speak(u)}catch(e){}}
+function boom(){for(let i=0;i<10;i++){const s=document.createElement('span');s.className='fx';s.textContent=pick(['⭐','🎉','🌟','✨']);s.style.left=(10+Math.random()*80)+'vw';s.style.top=(50+Math.random()*30)+'vh';document.body.appendChild(s);setTimeout(()=>s.remove(),1300)}}
+const MODS=[['learn','📚','Learn','#ff6b6b'],['watch','🎬','Watch and Learn','#f76707'],['listen','👂','Listen and Choose','#4dabf7'],['match','🔗','Read and Match','#51cf66'],['read','📖','Reading','#9775fa'],['fill','✏️','Fill in the Blanks','#e64980'],['tpr','🤸','Listen and Do','#20c997'],['order','🔢','Put in Order','#f59f00'],['memory','🧠','Memory Game','#339af0'],['final','🏆','Final Challenge','#7048e8']];
+function hud(){const n=MODS.filter(m=>P.best[m[0]]>0).length;$('#hud').textContent=`⭐ ${P.stars}  🎯 ${P.pts}  🏅 ${n}/10`;$('#pbi').style.width=n*10+'%'}
+const head=t=>`<div class="top"><button class="btn sm" onclick="go()" aria-label="Home">🏠 Home</button><h2>${t}</h2></div>`;
+function finish(m,s){P.best[m]=Math.max(P.best[m]||0,s);save();hud()}
+function go(m){speechSynthesis&&speechSynthesis.cancel&&speechSynthesis.cancel();scrollTo(0,0);({learn:vLearn,watch:vWatch,listen:()=>quiz('listen','👂 Listen',sh(W).slice(0,8).map(qL)),match:vMatch,read:()=>{const s=pick(S);quiz('read','📖 '+s.n,s.q.map(q=>qS(s,q)))},fill:()=>quiz('fill','✏️ Fill',sh(F).slice(0,6).map(qF)),tpr:()=>quiz('tpr','🤸 Do it',sh(W).slice(0,8).map(qT)),order:()=>vOrder(0),memory:vMemory,final:vFinal}[m]||home)()}
+function home(){app.innerHTML=`<div class="card"><div class="big">Hello! 👋 Let's learn!</div><p>Tap a game. Have fun!</p></div><div class="grid">${MODS.map(m=>`<button class="tile" style="background:${m[3]}" onclick="go('${m[0]}')"><span class="em">${m[1]}</span>${m[2]}<span>${'⭐'.repeat(P.best[m[0]]||0)||'&nbsp;'}</span></button>`).join('')}</div>
+<details><summary>👩‍🏫 Teacher notes</summary><p>Voices: put your own recordings in an <b>audio</b> folder next to this file, named like <b>sit-down.mp3</b>, <b>wake-up.mp3</b>. If a file is missing (or offline), the device voice is used as backup.<br>Videos: in "Watch and Learn", open the YouTube search, choose a video you have checked, and paste its link.</p><button class="btn sm" onclick="if(confirm('Reset progress?')){P={pts:0,stars:0,best:{},yt:P.yt};save();hud();home()}">Reset progress</button></details>`;hud()}
+/* generic quiz */
+const opt=w=>({k:w[0],e:w[1],l:w[0]}),oth=(w,n)=>sh(W.filter(x=>x!==w)).slice(0,n);
+const qL=w=>({p:'Listen and choose 👂',say:w[0],auto:1,c:w[0],o:sh([w,...oth(w,2)]).map(opt),show:'e',h:'Tap 🔊 to hear it again.'});
+const qR=w=>({p:cap(w[0]),say:w[0],c:w[0],o:sh([w,...oth(w,2)]).map(opt),show:'e',h:'Tap 🔊 and match the sound.'});
+const qT=w=>({p:'Teacher says: "'+cap(w[0])+'!"',say:w[0],auto:1,c:w[0],o:sh([w,...oth(w,3)]).map(opt),show:'el',done:'Now do it: '+w[1]+' '+w[0]+'!',h:'Listen again and look at the pictures.'});
+const qF=f=>{const b=sh([f[2],...sh([...new Set(F.map(x=>x[2]))].filter(x=>x!==f[2])).slice(0,3)]);return{pre:`<div class="em">${f[0]}</div>`,p:f[1].replace('___','<u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>'),c:f[2],o:b.map(x=>({k:x,l:x})),show:'l',h:'Look at the picture '+f[0]}};
+const qS=(s,q)=>({pre:s.l.map(l=>`<div class="ln"><span class="em">${l[0]}</span> ${l[1]}</div>`).join(''),say:s.l.map(l=>l[1]).join(' '),p:q[0],c:q[1],o:sh(q[2]).map(x=>({k:x,l:x})),show:'l',h:'Read the story again. 🔍'});
+function quiz(mod,title,qs){let i=0,sc=0;
+const show=()=>{if(i>=qs.length)return end();const q=qs[i];let tr=0;
+app.innerHTML=head(title+' '+(i+1)+'/'+qs.length)+`<div class="bar"><i style="width:${i/qs.length*100}%"></i></div><div class="card">${q.pre||''}<div class="big">${q.p}</div>${q.say?'<button class="btn" id="snd">🔊 Listen</button>':''}</div><div class="opts">${q.o.map((o,n)=>`<button class="opt" data-n="${n}">${q.show.includes('e')?`<span class="em">${o.e}</span>`:''}${q.show.includes('l')?`<span>${o.l}</span>`:''}</button>`).join('')}</div><div id="fb" aria-live="polite"></div><button class="btn alt" id="hint">💡 Hint</button>`;
+const fb=$('#fb');if(q.say){$('#snd').onclick=()=>speak(q.say);if(q.auto)setTimeout(()=>speak(q.say),300)}
+$('#hint').onclick=()=>fb.innerHTML=`<p>💡 ${q.h}</p>`;
+app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const o=q.o[b.dataset.n];
+if(o.k===q.c){app.querySelectorAll('.opt').forEach(x=>x.disabled=true);b.classList.add('ok');const f=!tr;P.pts+=f?10:5;if(f){sc++;P.stars++}save();hud();boom();
+fb.innerHTML=`<p class="good">${pick(GOOD)} ${q.done||''}</p><button class="btn go" id="nx">Next ➡️</button>`;$('#nx').onclick=()=>{i++;show()};$('#nx').focus()}
+else{tr++;b.disabled=true;b.classList.add('no');fb.innerHTML=`<p class="bad">${pick(TRY)}</p>${tr>=2?'<p>💡 '+q.h+'</p>':''}`}})};
+const end=()=>{const r=sc/qs.length,s=r>=.9?3:r>=.6?2:1;finish(mod,s);boom();app.innerHTML=head('🎉 Finished!')+`<div class="card"><div class="star">${'⭐'.repeat(s)}${'☆'.repeat(3-s)}</div><div class="big">You did it!</div><p>${sc} / ${qs.length} on the first try</p><button class="btn go" onclick="go('${mod}')">🔄 Play again</button> <button class="btn" onclick="go()">🏠 Home</button></div>`};
+show()}
+/* Learn */
+let heard=new Set(),unit=0;
+function vLearn(){app.innerHTML=head('📚 Learn')+`<div class="row">${UNITS.map((u,i)=>`<button class="btn sm" style="${i==unit?'background:var(--e)':''}" data-u="${i}">${u}</button>`).join('')}</div><div class="grid" style="margin-top:12px">${W.slice(unit*6,unit*6+6).map(w=>`<div class="card"><div class="em">${w[1]}</div><div class="big">${w[0]}</div><p>${w[2]}</p><button class="btn sm" data-w="${w[0]}">🔊 Word</button> <button class="btn sm alt" data-s="${w[2]}">🔊 Sentence</button></div>`).join('')}</div>`;
+app.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>{unit=+b.dataset.u;vLearn()});
+app.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{speak(b.dataset.w);heard.add(b.dataset.w);if(heard.size>=12){finish('learn',3)}else if(heard.size>=1&&!P.best.learn)finish('learn',1)});
+app.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>speak(b.dataset.s))}
+/* Watch */
+function vWatch(){const on=navigator.onLine;
+app.innerHTML=head('🎬 Watch and Learn')+(on?'':'<div class="card bad">📴 No internet. Videos need internet. Try Learn or the games!</div>')+T.map((t,i)=>{const id=P.yt[i];return`<div class="card"><h3>${t.t}</h3><p><b>Before ▶</b> ${t.b}</p><div class="row">${t.o.map((o,n)=>`<button class="btn sm" data-b="${i}.${n}">${o}</button>`).join('')}</div><p id="fb${i}"></p>
+${id?`<iframe src="https://www.youtube-nocookie.com/embed/${id}" title="${t.t}" allowfullscreen loading="lazy"></iframe>`:'<p>🎥 Choose a video: tap the button, pick a checked video, paste the link.</p>'}
+<p><a class="btn sm" href="https://www.youtube.com/results?search_query=${encodeURIComponent(t.s)}" target="_blank" rel="noopener">🔍 Find on YouTube</a></p><input id="u${i}" placeholder="Paste YouTube link" aria-label="YouTube link"> <button class="btn sm go" data-v="${i}">Save</button>
+<p><b>After ▶</b> Tap the words you heard:</p><div class="row">${t.w.map(w=>`<button class="btn sm alt" data-a="${i}" aria-pressed="false">${w}</button>`).join('')}</div><button class="btn sm go" data-c="${i}" style="margin-top:8px">✔ Check</button><p id="fa${i}"></p></div>`}).join('');
+app.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{const[i,n]=b.dataset.b.split('.');$('#fb'+i).innerHTML=+n===T[i].c?'<span class="good">Excellent! Now watch! 👀</span>':'<span class="bad">Try again!</span>';if(+n===T[i].c){P.pts+=5;save();hud()}});
+app.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{const m=$('#u'+b.dataset.v).value.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([\w-]{11})/);if(!m)return alert('Link not valid. Copy the full YouTube link.');P.yt[b.dataset.v]=m[1];save();vWatch()});
+app.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{const p=b.getAttribute('aria-pressed')!='true';b.setAttribute('aria-pressed',p);b.style.outline=p?'4px solid var(--c)':''});
+app.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{const i=b.dataset.c,n=app.querySelectorAll(`[data-a="${i}"][aria-pressed="true"]`).length;$('#fa'+i).innerHTML=n?'<span class="good">Great listening! 🌟</span>':'<span class="bad">Watch again and choose words.</span>';if(n){boom();P.pts+=10;P.stars++;finish('watch',3)}})}
+/* Match: tap a word, then a picture */
+function vMatch(){const ws=sh(W).slice(0,5),L=ws.map((w,i)=>({w,t:i<3?w[0]:w[2]})),R=sh(ws);let a=null,b=null,done=new Set(),err=0;
+const draw=()=>{app.innerHTML=head('🔗 Read and Match')+`<p>Tap a word 👆 then tap its picture.</p><div class="opts"><div>${L.map((x,i)=>`<button class="opt ${done.has(x.w)?'ok':''} ${a===x.w?'sel':''}" style="width:100%;margin-bottom:10px;min-height:70px" data-l="${i}" ${done.has(x.w)?'disabled':''}>${x.t}</button>`).join('')}</div><div>${R.map((w,i)=>`<button class="opt ${done.has(w)?'ok':''} ${b===w?'sel':''}" style="width:100%;margin-bottom:10px;min-height:70px" data-r="${i}" ${done.has(w)?'disabled':''}><span class="em">${w[1]}</span></button>`).join('')}</div></div><p id="fb" aria-live="polite"></p>`;
+app.querySelectorAll('[data-l]').forEach(e=>e.onclick=()=>{a=L[e.dataset.l].w;speak(a[0]);chk()});app.querySelectorAll('[data-r]').forEach(e=>e.onclick=()=>{b=R[e.dataset.r];chk()})};
+const chk=()=>{if(a&&b){if(a===b){done.add(a);P.pts+=10;P.stars++;save();hud();a=b=null;draw();$('#fb').innerHTML='<span class="good">'+pick(GOOD)+'</span>';if(done.size==5){const s=err<=1?3:err<=3?2:1;finish('match',s);boom();$('#fb').innerHTML=`<div class="card"><div class="star">${'⭐'.repeat(s)}</div><div class="big">You did it!</div><button class="btn go" onclick="go('match')">🔄 Play again</button></div>`}}else{err++;a=b=null;draw();$('#fb').innerHTML='<span class="bad">Try again! 💪</span>'}}else draw()};
+draw()}
+/* Order */
+function vOrder(r){const st=Math.floor(Math.random()*(W.length-4)),seq=W.slice(st,st+5);let pool=sh(seq),slots=[null,null,null,null,null],tries=0,bad=[];
+const draw=()=>{app.innerHTML=head('🔢 Put in Order')+`<p>What do you do first? Tap the pictures in order.</p><div class="row">${slots.map((s,i)=>`<button class="slot ${bad.includes(i)?'bad':''}" data-s="${i}" aria-label="Step ${i+1}">${s?s[1]:i+1}</button>`).join('')}</div><div class="row" style="margin:14px 0">${pool.map((w,i)=>`<button class="opt" style="min-width:110px" data-p="${i}"><span class="em">${w[1]}</span><span>${w[0]}</span></button>`).join('')}</div><button class="btn go" id="ck">✔ Check</button> <button class="btn alt" id="rs">🔄 Reset</button><p id="fb" aria-live="polite"></p>`;
+app.querySelectorAll('[data-p]').forEach(e=>e.onclick=()=>{const k=slots.indexOf(null);if(k<0)return;speak(pool[e.dataset.p][0]);slots[k]=pool.splice(e.dataset.p,1)[0];bad=[];draw()});
+app.querySelectorAll('[data-s]').forEach(e=>e.onclick=()=>{const s=slots[e.dataset.s];if(s){pool.push(s);slots[e.dataset.s]=null;bad=[];draw()}});
+$('#rs').onclick=()=>{pool=sh(seq);slots=[null,null,null,null,null];bad=[];draw()};
+$('#ck').onclick=()=>{if(slots.includes(null)){$('#fb').innerHTML='<span class="bad">Fill all the boxes!</span>';return}bad=slots.map((s,i)=>s===seq[i]?-1:i).filter(x=>x>=0);
+if(!bad.length){const s=tries==0?3:tries<3?2:1;P.pts+=10;P.stars+=s;finish('order',s);boom();$('#fb').innerHTML=`<div class="card"><div class="star">${'⭐'.repeat(s)}</div><div class="big">You did it!</div><button class="btn go" onclick="go('order')">➡️ New routine</button></div>`}
+else{tries++;draw();$('#fb').innerHTML='<span class="bad">Try again!</span> 💡 Think: morning ➡️ class ➡️ home.'}}};draw()}
+/* Memory */
+function vMemory(){const ws=sh(W).slice(0,6),cs=sh(ws.flatMap(w=>[{w,t:'w'},{w,t:'e'}]));let fl=[],ok=new Set(),mv=0,lock=false;
+const draw=()=>{app.innerHTML=head('🧠 Memory Game')+`<p>Moves: ${mv}. Find the word and its picture!</p><div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(100px,1fr))">${cs.map((c,i)=>{const o=ok.has(c.w)||fl.includes(i);return`<button class="fc ${ok.has(c.w)?'ok':''}" data-i="${i}" aria-label="Card ${i+1}">${o?(c.t=='e'?`<span class="em">${c.w[1]}</span>`:c.w[0]):'❓'}</button>`}).join('')}</div><p id="fb"></p>`;
+app.querySelectorAll('.fc').forEach(e=>e.onclick=()=>{const i=+e.dataset.i;if(lock||fl.includes(i)||ok.has(cs[i].w))return;speak(cs[i].w[0]);fl.push(i);if(fl.length==2){mv++;const[a,b]=fl;if(cs[a].w===cs[b].w&&cs[a].t!==cs[b].t){ok.add(cs[a].w);fl=[];P.pts+=10;save();hud();draw();if(ok.size==6){const s=mv<=10?3:mv<=16?2:1;P.stars+=s;finish('memory',s);boom();$('#fb').innerHTML=`<div class="card"><div class="star">${'⭐'.repeat(s)}</div><div class="big">You did it!</div><button class="btn go" onclick="go('memory')">🔄 Play again</button></div>`}return}lock=true;draw();setTimeout(()=>{fl=[];lock=false;draw()},1000);return}draw()})};draw()}
+/* Final */
+function vFinal(){const w=sh(W).slice(0,10),f=sh(F);quiz('final','🏆 Challenge',sh([...w.slice(0,3).map(qL),...w.slice(3,6).map(qR),...w.slice(6,8).map(qT),...f.slice(0,2).map(qF)]))}
+window.addEventListener('offline',()=>{if(app.textContent.includes('Watch and Learn'))vWatch()});
+home();
+</script>
+</body>
+</html>
